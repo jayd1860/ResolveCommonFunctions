@@ -1,50 +1,17 @@
 function idxs = SearchStringInFile(funcname, filename)
 idxs = [];
 
-[~, filenamePartial] = fileparts(filename);
-
-if strcmp(funcname, filenamePartial)
-    return;
-end
-
 fid = fopen(filename);
 if fid<0
     return
 end
-idxs = SearchFile2(fid, funcname);
+idxs = SearchFile(fid, funcname);
 fclose(fid);
 
 
 
-
 % -------------------------------------------------------
-function idxs = SearchFile1(fid, funcname)
-idxs = [];
-nbytesread = 0;
-l = [];
-while ~feof(fid)
-    l = fgetl(fid);
-    if isempty(l)
-        nbytesread = nbytesread+length(l);
-        continue;
-    end
-    
-    k1 = findstrFunctionName(l, funcname);
-    k2 = findstrFileName(l, [funcname, '.m']);
-    k = [k1,k2];
-    if isempty(k)
-        nbytesread = nbytesread+length(l);
-        continue;
-    end
-    
-    idxs = [idxs, nbytesread+k]; %#ok<*AGROW>
-    nbytesread = nbytesread+length(l);
-end
-
-
-
-% -------------------------------------------------------
-function idxs = SearchFile2(fid, funcname)
+function idxs = SearchFile(fid, funcname)
 idxs = [];
 chunksize = 512;
 chunkPrev = '';
@@ -77,6 +44,7 @@ while ~feof(fid)
     chunkPrev = chunkCurr;
 
     % Cases:
+    k = [];
     if isempty([k1, k2, k3])
         continue;
     end
@@ -99,7 +67,7 @@ while ~feof(fid)
     if isempty(k)
         continue;
     end
-    
     idxs = [idxs, k]; %#ok<*AGROW>
     
 end
+

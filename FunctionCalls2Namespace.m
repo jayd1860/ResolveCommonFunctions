@@ -29,7 +29,7 @@ N = length(filenames);
 nfiles = 0;
 noccurr = 0;
 for ii = 1:N
-    
+       
     % Find occurrences of function call
     idxs = SearchStringInFile(funcname, filenames{ii});
     if isempty(idxs)
@@ -55,7 +55,7 @@ if ~exist('namespace','var')
     namespace = '';
 end
 
-p = fileparts(filename);
+[p, f] = fileparts(filename);
 if isempty(namespace)
     temp = fileparts(p);
     if isempty(temp)
@@ -77,24 +77,31 @@ end
 ilinestr = 0;
 while ~feof(fid_src)
     linestr = fgetl(fid_src);
-    ilinestr = ilinestr+1;
+    linestrNew = linestr;
     
+    if ~isempty(findstr(linestr, 'setpaths_proprietary')) && strcmp(f, 'setpaths')
+        d = 1;
+    end
+    
+    % Look for function call and class object references
     k1 = findstrFunctionName(linestr, funcname);
     if ~isempty(k1)
-        FunctionCalls2NamespaceInLine(fid_dst, funcname, linestr, k1, namespace);
+        linestrNew = FunctionCalls2NamespaceInLine(funcname, linestr, k1, namespace);
     end
     
-    k2 = findstrFileName(linestr, [funcname, '.m']);
+    % Look for other type of function references, like the associated file
+    k2 = findstrFileName(linestrNew, [funcname, '.m']);
     if ~isempty(k2)
-        FileRef2NamespaceInLine(fid_dst, [funcname, '.m'], linestr, k2, namespace);
+        linestrNew = FileRef2NamespaceInLine([funcname, '.m'], linestrNew, k2, namespace);
     end
     
-    if isempty(k1) && isempty(k2)
-        if fid_dst>0
-            fprintf(fid_dst, '%s\n', linestr);
-        end
+    if fid_dst>0
+        fprintf(fid_dst, '%s\n', linestrNew);
     end
+    
+    ilinestr = ilinestr+1;
 end
+
 fclose(fid_src);
 if fid_dst>0
     fclose(fid_dst);
@@ -108,7 +115,7 @@ end
 
 
 % ----------------------------------------------------------
-function FunctionCalls2NamespaceInLine(fid, funcname, linestr, k, namespace)
+function linestrNew = FunctionCalls2NamespaceInLine(funcname, linestr, k, namespace)
 if isempty(k)
     return;
 end
@@ -123,14 +130,11 @@ for jj = 1:length(k)-1
         linestrNew = sprintf('%s%s.%s%s', linestrNew, namespace, funcname, linestr(k(jj)+length(funcname) : k(jj+1)));
     end
 end
-if fid>0
-    fprintf(fid, '%s\n', linestrNew);
-end
 
 
 
 % ----------------------------------------------------------
-function FileRef2NamespaceInLine(fid, filename, linestr, k, namespace)
+function linestrNew = FileRef2NamespaceInLine(filename, linestr, k, namespace)
 if isempty(k)
     return;
 end
@@ -144,9 +148,5 @@ for jj = 1:length(k)-1
     else
         linestrNew = sprintf('%s+%s/%s%s', linestrNew, namespace, filename, linestr(k(jj)+length(filename) : k(jj+1)));
     end
-end
-if fid>0
-    fprintf(fid, '%s\n', linestrNew);
-else
 end
 

@@ -54,15 +54,15 @@ end
 
 % -------------------------------------------------------------------------
 function b = isdotmfile(file)
-
-b=0;
+b = false;
 if file.isdir
     return;
 end
-if file.name(end) ~= 'm' || file.name(end-1) ~= '.'
+[~, ~, ext] = fileparts(file.name);
+if ~strcmp(ext, '.m')
     return;
 end
-b=1;
+b = true;
 
 
 

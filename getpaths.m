@@ -14,7 +14,7 @@ paths_excl_str = {};
 if options.conflcheck
         
     % Get all workspace paths that have similar functions sets with current applications
-    appmainfunc = {'AtlasViewerGUI.m','Homer2_UI.m','Homer3.m','brainScape.m','AcqDataClass.m'};
+    appmainfunc = {'ResolveCommonFunctions.m','AtlasViewerGUI.m','Homer2_UI.m','Homer3.m','brainScape.m','AcqDataClass.m'};
     
     kk=1;
     wsidx = [];
@@ -43,7 +43,7 @@ if options.conflcheck
                     paths_excl_str{kk} = [paths_excl_str{kk}, delimiter, paths_excl{jj}];
                 end
             end
-            rmpath(paths_excl_str{kk});
+            removePaths(paths_excl_str{kk}, wspaths{1,1});
             kk=kk+1;
             
         end
@@ -64,5 +64,16 @@ if options.conflcheck
         paths_excl_str{wsidx} = celltmp;        
     end
     
+end
+
+
+
+
+% ---------------------------------------------------------------
+function removePaths(paths, wspace)
+
+rmpath(paths);
+if exist([pwd, '/Utils'], 'dir')==7
+    addpath([pwd, '/Utils'], '-end');
 end
 

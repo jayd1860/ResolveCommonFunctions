@@ -1,8 +1,8 @@
 function [filesCommonDifferentUnresolved, filesCommonDifferentResolved] = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
 %
 %
-% ws1 = 'D:\jdubb\workspaces\try2\AtlasViewer.BUNPC_development';
-% ws2 = 'D:\jdubb\workspaces\try2\Homer3.BUNPC_development';
+% ws1 = 'f:\jdubb\workspaces\try2\AtlasViewer.BUNPC_development';
+% ws2 = 'f:\jdubb\workspaces\try2\Homer3.BUNPC_development';
 % ns1 = 'av';
 % ns2 = 'h3';
 %
@@ -37,6 +37,10 @@ end
 if ~exist('ns2','var')
     [~, ns2] = fileparts(filesepStandard(ws2, 'file:nameonly'));
 end
+
+% Reset workspaces
+gitRevertCmd(ws1);
+gitRevertCmd(ws2);
 
 % Find all function in conflict; that is all functions with same name but
 % different definitions
@@ -97,30 +101,19 @@ function namespacePaths = CreateNamespace(files, namespace)
 namespacePaths = {};
 kk = 1;
 for ii = 1:length(files)
-    [pname, fname, ext] = fileparts(files{ii});
-    [~,pname2] = fileparts(pname);
-    if strcmp(pname2, ['+',namespace])
-        continue
-    end
-    namespacefull = filesepStandard([filesepStandard(pname), '+', namespace], 'nameonly:dir');    
-    if ~ispathvalid(namespacefull)
-        mkdir(namespacefull);
-    end    
-    if ~ispathvalid([namespacefull, fname, ext])
-        r = movefile_local(files{ii}, [namespacefull, fname, ext]);
+    [pname, fname, ext] = fileparts(files{ii});      
+    namespacefull = generateNamespaceFolder(namespace, pname, fname, ext);
+    filenameNew = [namespacefull, fname, ext];
+    if ~ispathvalid(filenameNew)
+        r = movefile_local(files{ii}, filenameNew);
         if r==0
-            namespacePaths{kk,1} = [namespacefull, fname, ext]; %#ok<AGROW>
+            namespacePaths{kk,1} = filenameNew; %#ok<AGROW>
             kk = kk+1;
         end
     else
-        fprintf('%s already exists.\n', [namespacefull, fname, ext])
+        fprintf('%s already exists.\n', filenameNew)
     end
-    
-    if ispathvalid(files{ii})
-        fprintf('Deleting %s\n', [namespacefull, fname, ext], files{ii})
-        delete(files{ii})
-    end
-       
+           
 end
 fprintf('\n');
 
