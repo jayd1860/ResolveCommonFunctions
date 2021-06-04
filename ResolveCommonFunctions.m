@@ -1,8 +1,8 @@
 function [filesCommonDifferentUnresolved, filesCommonDifferentResolved] = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
 %
 %
-% ws1 = 'f:\jdubb\workspaces\try2\AtlasViewer.BUNPC_development';
-% ws2 = 'f:\jdubb\workspaces\try2\Homer3.BUNPC_development';
+% ws1 = 'f:\jdubb\workspaces\try\AtlasViewer.BUNPC_development';
+% ws2 = 'f:\jdubb\workspaces\try\Homer3.BUNPC_development';
 % ns1 = 'av';
 % ns2 = 'h3';
 %
@@ -13,6 +13,7 @@ global exclList
 exclList = {
     '.git';
     'setpaths.m';
+    'UserFunctions';
     };
 
 filesCommonDifferentUnresolved = {};

@@ -32,7 +32,7 @@ for ii = 1:N
        
     % Find occurrences of function call
     idxs = SearchStringInFile(funcname, filenames{ii});
-    if isempty(idxs)
+    if isempty(idxs{1,1}) && isempty(idxs{1,2})
         continue;
     end
     
@@ -41,7 +41,7 @@ for ii = 1:N
     noccurr = noccurr+length(idxs);
 
     % Change function call in file to references namespace
-    FunctionCalls2NamespaceInFile(funcname, filenames{ii}, namespace);
+    FunctionCalls2NamespaceInFile(funcname, filenames{ii}, namespace, idxs);
 end
 fprintf('Found %d occurrences of %s in %d files of workspace %s\n', noccurr, funcname, nfiles, ws);
 
@@ -49,13 +49,13 @@ fprintf('Found %d occurrences of %s in %d files of workspace %s\n', noccurr, fun
 
 
 % ----------------------------------------------------------
-function FunctionCalls2NamespaceInFile(funcname, filename, namespace)
+function FunctionCalls2NamespaceInFile(funcname, filename, namespace, idxs)
 DEBUG = 0;
 if ~exist('namespace','var')
     namespace = '';
 end
 
-[p, f] = fileparts(filename);
+p = fileparts(filename);
 if isempty(namespace)
     temp = fileparts(p);
     if isempty(temp)
@@ -78,11 +78,7 @@ ilinestr = 0;
 while ~feof(fid_src)
     linestr = fgetl(fid_src);
     linestrNew = linestr;
-    
-    if ~isempty(findstr(linestr, 'setpaths_proprietary')) && strcmp(f, 'setpaths')
-        d = 1;
-    end
-    
+       
     % Look for function call and class object references
     k1 = findstrFunctionName(linestr, funcname);
     if ~isempty(k1)

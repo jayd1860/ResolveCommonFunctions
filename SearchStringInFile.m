@@ -1,5 +1,5 @@
 function idxs = SearchStringInFile(funcname, filename)
-idxs = [];
+idxs = cell(1,2);
 
 fid = fopen(filename);
 if fid<0
@@ -12,7 +12,9 @@ fclose(fid);
 
 % -------------------------------------------------------
 function idxs = SearchFile(fid, funcname)
-idxs = [];
+idxs = cell(1,2);
+k = cell(3,2);
+
 chunksize = 512;
 chunkPrev = '';
 ichunk = 0;
@@ -29,45 +31,35 @@ while ~feof(fid)
     % s when a chunk falls in the middle of our search string
     chunks = [char(chunkPrev(:)'), char(chunkCurr(:)')];
 
-    k11 = findstrFunctionName(char(chunkPrev(:)'), funcname);
-    k12 = findstrFunctionName(char(chunkCurr(:)'), funcname); 
-    k13 = findstrFunctionName(chunks, funcname); 
+    k{1,1} = findstrFunctionName(char(chunkPrev(:)'), funcname);
+    k{2,1} = findstrFunctionName(char(chunkCurr(:)'), funcname); 
+    k{3,1} = findstrFunctionName(chunks, funcname); 
 
-    k21 = findstrFileName(char(chunkPrev(:)'), funcname);
-    k22 = findstrFileName(char(chunkCurr(:)'), funcname); 
-    k23 = findstrFileName(chunks, funcname); 
-
-    k1 = [k11, k21];
-    k2 = [k12, k22];
-    k3 = [k13, k23];
+    k{1,2} = findstrFileName(char(chunkPrev(:)'), funcname);
+    k{2,2} = findstrFileName(char(chunkCurr(:)'), funcname); 
+    k{3,2} = findstrFileName(chunks, funcname); 
 
     chunkPrev = chunkCurr;
 
     % Cases:
-    k = [];
-    if isempty([k1, k2, k3])
-        continue;
+    j = [];
+    for ii = 1:2
+        if ~isempty(k{1,ii}) && isempty(k{2,ii}) && ~isempty(k{3,ii})
+            break;
+        end
+        if ~isempty(k{1,ii}) && ~isempty(k{2,ii}) && isempty(k{3,ii})
+            break;
+        end
+        if ~isempty(k{2,ii}) && ~isempty(k{3,ii})
+            j = ((ichunk-1)*chunksize) + k{2,ii};
+        end
+        if isempty(k{1,ii}) && isempty(k{2,ii}) && ~isempty(k{3,ii})
+            j = ((ichunk-2)*chunksize) + k{3,ii};
+        end
+        if isempty(k{1,ii}) && ~isempty(k{2,ii}) && ~isempty(k{3,ii})
+            j = ((ichunk-1)*chunksize) + k{2,ii};
+        end
+        idxs{ii} = [idxs{ii}, j]; %#ok<*AGROW>
     end
-    if ~isempty(k1) && isempty(k2) && ~isempty(k3)
-        continue;
-    end
-    if ~isempty(k1) && ~isempty(k2) && isempty(k3)
-        continue;
-    end
-    if ~isempty(k2) && ~isempty(k3)
-        k = ((ichunk-1)*chunksize) + k2;
-    end
-    if isempty(k1) && isempty(k2) && ~isempty(k3)
-        k = ((ichunk-2)*chunksize) + k3;
-    end
-    if isempty(k1) && ~isempty(k2) && ~isempty(k3)
-        k = ((ichunk-1)*chunksize) + k2;
-    end
-    
-    if isempty(k)
-        continue;
-    end
-    idxs = [idxs, k]; %#ok<*AGROW>
-    
 end
 
