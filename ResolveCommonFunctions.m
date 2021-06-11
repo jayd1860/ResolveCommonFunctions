@@ -1,12 +1,20 @@
-function [filesCommonDifferentUnresolved, filesCommonDifferentResolved] = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
+function [filesCommonDifferentUnresolved, filesCommonDifferentResolved, filesCommonSame] = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
 %
+% Syntax:
+%   [filesCommonDifferentUnresolved, filesCommonDifferentResolved, filesCommonSame] = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
+%   [filesCommonDifferentUnresolved, filesCommonDifferentResolved] = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
+%   filesCommonDifferentUnresolved = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
+%   [filesCommonDifferentUnresolved, filesCommonDifferentResolved, filesCommonSame] = ResolveCommonFunctions(ws1, ws2)
+%   [filesCommonDifferentUnresolved, filesCommonDifferentResolved] = ResolveCommonFunctions(ws1, ws2)
+%   filesCommonDifferentUnresolved = ResolveCommonFunctions(ws1, ws2)
 %
-% ws1 = 'f:\jdubb\workspaces\try\AtlasViewer.BUNPC_development';
-% ws2 = 'f:\jdubb\workspaces\try\Homer3.BUNPC_development';
-% ns1 = 'av';
-% ns2 = 'h3';
+% Examples:
+%   ws1 = 'f:\jdubb\workspaces\try\AtlasViewer.BUNPC_development';
+%   ws2 = 'f:\jdubb\workspaces\try\Homer3.BUNPC_development';
+%   ns1 = 'av';
+%   ns2 = 'h3';
+%   [filesCommonDifferentUnresolved, filesCommonDifferentResolved] = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
 %
-% [filesCommonDifferentUnresolved, filesCommonDifferentResolved] = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
 %
 global exclList
 
@@ -18,6 +26,7 @@ exclList = {
 
 filesCommonDifferentUnresolved = {};
 filesCommonDifferentResolved = {};
+filesCommonSame = {};
 
 if nargin < 2
     return;
@@ -45,9 +54,9 @@ gitRevertCmd(ws2);
 
 % Find all function in conflict; that is all functions with same name but
 % different definitions
-[filesCommonDifferentUnresolved, filesCommonDifferentResolved] = findCommonFiles(ws1, ws2);
-filesCommon = [filesCommonDifferentUnresolved; filesCommonDifferentResolved];
-if isempty(filesCommon)
+[filesCommonDifferentUnresolved, filesCommonDifferentResolved, filesCommonSame] = findCommonFiles(ws1, ws2);
+filesCommonDifferent = [filesCommonDifferentUnresolved; filesCommonDifferentResolved];
+if isempty(filesCommonDifferent)
     fprintf('There are no potential function conflicts between these 2 workspaces\n')
     return;
 end
@@ -74,21 +83,21 @@ end
 fprintf('\n\n');
 
 % Rosolve all functions calls to namespace functions
-N = size(filesCommon,1);
+N = size(filesCommonDifferent,1);
 waitmsg = 'Searching for namespace function calls. Please wait ...';
 
 h = waitbar_improved(0, waitmsg);
 
 for ii = 1:N
     waitbar_improved(ii/(2*N), h, waitmsg);
-    [~, funcname] = fileparts(filesCommon{ii,1});
+    [~, funcname] = fileparts(filesCommonDifferent{ii,1});
     FunctionCalls2Namespace(funcname, ws1, ns1)
 end
 fprintf('\n');
 
 for jj = 1:N
     waitbar_improved((jj+ii)/(2*N), h, waitmsg);
-    [~, funcname] = fileparts(filesCommon{jj,2});
+    [~, funcname] = fileparts(filesCommonDifferent{jj,2});
     FunctionCalls2Namespace(funcname, ws2, ns2)
 end
 fprintf('\n');
