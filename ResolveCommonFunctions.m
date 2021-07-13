@@ -1,4 +1,4 @@
-function [filesCommonDifferentUnresolved, filesCommonDifferentResolved, filesCommonSame] = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
+function [filesCommonDifferentUnresolved, filesCommonDifferentResolved, filesCommonSame] = ResolveCommonFunctions(ws1, ws2, ns1, ns2, options)
 %
 % Syntax:
 %   [filesCommonDifferentUnresolved, filesCommonDifferentResolved, filesCommonSame] = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
@@ -8,12 +8,31 @@ function [filesCommonDifferentUnresolved, filesCommonDifferentResolved, filesCom
 %   [filesCommonDifferentUnresolved, filesCommonDifferentResolved] = ResolveCommonFunctions(ws1, ws2)
 %   filesCommonDifferentUnresolved = ResolveCommonFunctions(ws1, ws2)
 %
-% Examples:
+% Example 1:
+%   cd <root folder>/ResolveCommonFunctions; setpaths
 %   ws1 = 'f:\jdubb\workspaces\try\AtlasViewer.BUNPC_development';
 %   ws2 = 'f:\jdubb\workspaces\try\Homer3.BUNPC_development';
 %   ns1 = 'av';
 %   ns2 = 'h3';
 %   [filesCommonDifferentUnresolved, filesCommonDifferentResolved] = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
+%
+% Example 2:
+%   % Git reset workspaces
+%   ws1 = 'f:\jdubb\workspaces\try\AtlasViewer.BUNPC_development';
+%   ws2 = 'f:\jdubb\workspaces\try\Homer3.BUNPC_development';
+%   ns1 = 'av';
+%   ns2 = 'h3';
+%   [filesCommonDifferentUnresolved, filesCommonDifferentResolved] = ResolveCommonFunctions(ws1, ws2, ns1, ns2, 'nochange')
+%
+%
+% Example 3:
+%   % Git reset workspaces
+%   ws1 = 'f:\jdubb\workspaces\try\AtlasViewer.BUNPC_development';
+%   ws2 = 'f:\jdubb\workspaces\try\Homer3.BUNPC_development';
+%   ns1 = 'av';
+%   ns2 = 'h3';
+%   [filesCommonDifferentUnresolved, filesCommonDifferentResolved] = ResolveCommonFunctions(ws1, ws2, ns1, ns2, 'reset')
+%
 %
 %
 global exclList
@@ -47,10 +66,16 @@ end
 if ~exist('ns2','var')
     [~, ns2] = fileparts(filesepStandard(ws2, 'file:nameonly'));
 end
+if ~exist('options','var')
+    options = 'reset:change';
+end
 
 % Reset workspaces
-gitRevertCmd(ws1);
-gitRevertCmd(ws2);
+if optionExists(options,'reset')
+    gitRevertCmd(ws1);
+    gitRevertCmd(ws2);
+end
+
 
 % Find all function in conflict; that is all functions with same name but
 % different definitions
@@ -61,6 +86,13 @@ if isempty(filesCommonDifferent)
     return;
 end
 
+if ~optionExists(options,'change')
+    return;
+end
+if isempty(filesCommonDifferentUnresolved)
+    return;
+end
+
 % Create namesspace folders for all conflicting functions
 if ~isempty(filesCommonDifferentUnresolved)
     filesCommonDifferentResolved1 = CreateNamespace(filesCommonDifferentUnresolved(:,1), ns1);
@@ -68,7 +100,7 @@ if ~isempty(filesCommonDifferentUnresolved)
     
     filesCommonDifferentResolved2 = CreateNamespace(filesCommonDifferentUnresolved(:,2), ns2);
     fprintf('\n');
-
+    
     if isempty(filesCommonDifferentResolved1)
         fprintf('All conflicting files in namespace %s for workspace %s\n', ns1, fileparts(ws1));
     else
@@ -78,7 +110,7 @@ if ~isempty(filesCommonDifferentUnresolved)
         fprintf('All conflicting files in namespace %s for workspace %s\n', ns2, fileparts(ws2));
     else
         fprintf('%d conflicting files in workspace %s moved to namespace %s\n', size(filesCommonDifferentResolved2,1), fileparts(ws2), ns2);
-    end    
+    end
 end
 fprintf('\n\n');
 
@@ -111,7 +143,7 @@ function namespacePaths = CreateNamespace(files, namespace)
 namespacePaths = {};
 kk = 1;
 for ii = 1:length(files)
-    [pname, fname, ext] = fileparts(files{ii});      
+    [pname, fname, ext] = fileparts(files{ii});
     namespacefull = generateNamespaceFolder(namespace, pname, fname, ext);
     filenameNew = [namespacefull, fname, ext];
     if ~ispathvalid(filenameNew)
@@ -123,7 +155,7 @@ for ii = 1:length(files)
     else
         fprintf('%s already exists.\n', filenameNew)
     end
-           
+    
 end
 fprintf('\n');
 
