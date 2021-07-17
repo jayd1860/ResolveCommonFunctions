@@ -5,83 +5,58 @@ if nargin<2
     return;
 end
 
-i = findstr(s1, 'function '); %#ok<*FSTR>
-j = findstr(s1, 'classdef '); %#ok<*FSTR>
 k = findstr(s1, s2); %#ok<*FSTR>
 if isempty(k)
     return;
 end
-
-% Compile list of indices to remove from k
-idxs = [];
-for ii = 1:length(k)
-    kS = k(ii)-1;
-    kE = k(ii)+length(s2);
-    
-    
-    if kE > length(s1)
+idxsExcl = [];
+for jj = 1:length(k)
+    kS = k(jj);
+    kE = k(jj)+length(s1)-1;
+    if kE > length(s2)
+        break;
+    end
+    if (kE-kS) > length(s1)
         break;
     end
     
-    % If funcname surrounded by quotes then we found function reference
-    if kS>0 && kE<length(s1)
-        if s1(kS)==sprintf('''') && s1(kE)==sprintf('''')
-            continue;
-        end
-    end
-    
-    % Check start of function name
-    if 0<kS && kS<length(s1)  && ~isFuncNameStartDelimiter(s1, kS)
-        idxs = [idxs, ii]; %#ok<*AGROW>
-        continue;
-    end
-    
     % Check end of function name
-    if 0<kE && kE<length(s1) && ~isFuncNameEndDelimiter(s1, kE)
-        idxs = [idxs, ii]; %#ok<*AGROW>
-        continue;
-    end
-    
-    % Check for function declaration which does not qualify as a function
-    % call or function reference, so add it to the remove list
-    if isFuncNameDeclaration(s1, i, k(ii), s2)
-        idxs = [idxs, ii]; %#ok<*AGROW>
-        continue;
-    end
-    
-    % Check for function declaration which does not qualify as a function
-    % call or function reference, so add it to the remove list
-    if isFuncNameClassdef(s1, j, k(ii))
-        idxs = [idxs, ii]; %#ok<*AGROW>
-        continue;
-    end
-    
+    if ~isFuncNameStart(s2, kS)
+        idxsExcl = [idxsExcl, jj];    
+    elseif ~isFuncNameEnd(s2, kE)
+        % Check end of function name
+        idxsExcl = [idxsExcl, jj];
+    end    
 end
-
-k(idxs) = [];
-
-
-
-% --------------------------------------------------------
-function b = isFuncNameStartDelimiter(s, j)
-b = (~isalnum(s(j))) || isspace(s(j));
+k(idxsExcl) = [];
 
 
 
 % --------------------------------------------------------
-function b = isFuncNameEndDelimiter(s, j)
+function b = isFuncNameStart(s, j)
 b = false;
-if (s(j) == '.') 
-    if j+1 <= length(s)
-        if strcmp(s(j:j+1), '.m')
-            if j+2 >= length(s)
-                return;                
-            end
-            if ~isalnum(s(j+2))
-                return
-            end
-        end
-    end
+j = j-1;
+if j<1
+    b = true;
+    return
+end
+if j>length(s)
+    return
+end
+b = ~isalnum(s(j));
+
+
+
+% --------------------------------------------------------
+function b = isFuncNameEnd(s, j)
+b = false;
+j = j+1;
+if j>length(s)
+    b = true;
+    return
+end
+if j<1
+    return
 end
 b = (s(j) == '(') || (s(j) == ';') || (s(j) == ',') || (s(j) == '.') || (s(j) < 33);
 

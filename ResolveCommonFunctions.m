@@ -1,12 +1,12 @@
-function [filesCommonDifferentUnresolved, filesCommonDifferentResolved, filesCommonSame] = ResolveCommonFunctions(ws1, ws2, ns1, ns2, options)
+function [filesCommonDifferent, filesCommonSame] = ResolveCommonFunctions(ws1, ws2, ns1, ns2, options)
 %
 % Syntax:
-%   [filesCommonDifferentUnresolved, filesCommonDifferentResolved, filesCommonSame] = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
-%   [filesCommonDifferentUnresolved, filesCommonDifferentResolved] = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
-%   filesCommonDifferentUnresolved = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
-%   [filesCommonDifferentUnresolved, filesCommonDifferentResolved, filesCommonSame] = ResolveCommonFunctions(ws1, ws2)
-%   [filesCommonDifferentUnresolved, filesCommonDifferentResolved] = ResolveCommonFunctions(ws1, ws2)
-%   filesCommonDifferentUnresolved = ResolveCommonFunctions(ws1, ws2)
+%   [filesCommonDifferent, filesCommonSame] = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
+%   [filesCommonDifferent] = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
+%   filesCommonDifferent = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
+%   [filesCommonDifferent, filesCommonSame] = ResolveCommonFunctions(ws1, ws2)
+%   [filesCommonDifferent] = ResolveCommonFunctions(ws1, ws2)
+%   filesCommonDifferent = ResolveCommonFunctions(ws1, ws2)
 %
 % Example 1:
 %   cd <root folder>/ResolveCommonFunctions; setpaths
@@ -14,7 +14,7 @@ function [filesCommonDifferentUnresolved, filesCommonDifferentResolved, filesCom
 %   ws2 = 'f:\jdubb\workspaces\try\Homer3.BUNPC_development';
 %   ns1 = 'av';
 %   ns2 = 'h3';
-%   [filesCommonDifferentUnresolved, filesCommonDifferentResolved] = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
+%   [filesCommonDifferent] = ResolveCommonFunctions(ws1, ws2, ns1, ns2)
 %
 % Example 2:
 %   % Git reset workspaces
@@ -22,7 +22,7 @@ function [filesCommonDifferentUnresolved, filesCommonDifferentResolved, filesCom
 %   ws2 = 'f:\jdubb\workspaces\try\Homer3.BUNPC_development';
 %   ns1 = 'av';
 %   ns2 = 'h3';
-%   [filesCommonDifferentUnresolved, filesCommonDifferentResolved] = ResolveCommonFunctions(ws1, ws2, ns1, ns2, 'nochange')
+%   [filesCommonDifferent] = ResolveCommonFunctions(ws1, ws2, ns1, ns2, 'nochange')
 %
 %
 % Example 3:
@@ -31,7 +31,7 @@ function [filesCommonDifferentUnresolved, filesCommonDifferentResolved, filesCom
 %   ws2 = 'f:\jdubb\workspaces\try\Homer3.BUNPC_development';
 %   ns1 = 'av';
 %   ns2 = 'h3';
-%   [filesCommonDifferentUnresolved, filesCommonDifferentResolved] = ResolveCommonFunctions(ws1, ws2, ns1, ns2, 'reset')
+%   [filesCommonDifferent] = ResolveCommonFunctions(ws1, ws2, ns1, ns2, 'reset')
 %
 %
 %
@@ -43,8 +43,7 @@ exclList = {
     'UserFunctions';
     };
 
-filesCommonDifferentUnresolved = {};
-filesCommonDifferentResolved = {};
+filesCommonDifferent = {};
 filesCommonSame = {};
 
 if nargin < 2
@@ -79,8 +78,7 @@ end
 
 % Find all function in conflict; that is all functions with same name but
 % different definitions
-[filesCommonDifferentUnresolved, filesCommonDifferentResolved, filesCommonSame] = findCommonFiles(ws1, ws2);
-filesCommonDifferent = [filesCommonDifferentUnresolved; filesCommonDifferentResolved];
+[filesCommonDifferent, filesCommonSame] = findCommonFiles(ws1, ws2);
 if isempty(filesCommonDifferent)
     fprintf('There are no potential function conflicts between these 2 workspaces\n')
     return;
@@ -89,51 +87,21 @@ end
 if ~optionExists(options,'change')
     return;
 end
-if isempty(filesCommonDifferentUnresolved)
+if isempty(filesCommonDifferent)
     return;
 end
 
-% Create namesspace folders for all conflicting functions
-if ~isempty(filesCommonDifferentUnresolved)
-    filesCommonDifferentResolved1 = CreateNamespace(filesCommonDifferentUnresolved(:,1), ns1);
-    fprintf('\n');
-    
-    filesCommonDifferentResolved2 = CreateNamespace(filesCommonDifferentUnresolved(:,2), ns2);
-    fprintf('\n');
-    
-    if isempty(filesCommonDifferentResolved1)
-        fprintf('All conflicting files in namespace %s for workspace %s\n', ns1, fileparts(ws1));
-    else
-        fprintf('%d conflicting files in workspace %s moved to namespace %s\n', size(filesCommonDifferentResolved1,1), fileparts(ws1), ns1);
-    end
-    if isempty(filesCommonDifferentResolved2)
-        fprintf('All conflicting files in namespace %s for workspace %s\n', ns2, fileparts(ws2));
-    else
-        fprintf('%d conflicting files in workspace %s moved to namespace %s\n', size(filesCommonDifferentResolved2,1), fileparts(ws2), ns2);
-    end
-end
-fprintf('\n\n');
-
 % Rosolve all functions calls to namespace functions
 N = size(filesCommonDifferent,1);
-waitmsg = 'Searching for namespace function calls. Please wait ...';
-
+waitmsg = 'Resolving conflicting function. Please wait ...';
 h = waitbar_improved(0, waitmsg);
-
 for ii = 1:N
+    % Create new common file out of the 2 files with common name but
+    % different contents
     waitbar_improved(ii/(2*N), h, waitmsg);
-    [~, funcname] = fileparts(filesCommonDifferent{ii,1});
-    FunctionCalls2Namespace(funcname, ws1, ns1)
+    CreateCommonFile(filesCommonDifferent{ii,1}, filesCommonDifferent{ii,2}, ns1, ns2); 
 end
 fprintf('\n');
-
-for jj = 1:N
-    waitbar_improved((jj+ii)/(2*N), h, waitmsg);
-    [~, funcname] = fileparts(filesCommonDifferent{jj,2});
-    FunctionCalls2Namespace(funcname, ws2, ns2)
-end
-fprintf('\n');
-
 close(h);
 
 
