@@ -25,16 +25,10 @@ body = [body; createSubFuncStr(filename2, namespace2)];
 saveCommonFile(fname, body);
 pause(.2);
 
-% fid1 = fopen(filename1, 'rt');
-% fclose(fid1);
-% 
-% fid2 = fopen(filename2, 'rt');
-% fclose(fid1);
 
 
 % ------------------------------------------------------------------------------
 function funcHdr = createFuncFormalHdr(fname, namespace, nargin, nargout)
-
 if ~isempty(namespace)
     namespace = ['_', namespace];
 end
@@ -51,24 +45,37 @@ funcHdr = sprintf('function %s = %s%s%s', argOutStr, fname, namespace, argInStr)
 
 % ------------------------------------------------------------------------------
 function fcalls = createFuncCalls(fname, namespace, nargin, nargout)
-
 if ~isempty(namespace)
     namespace = ['_', namespace];
 end
 
+% Create arg out string
+argOutStr = genArgOutStr(nargout);
+
 % Create arg in string
-kk = 1;
-for ii = 1:nargin
-    for jj = 1:nargout
-        argInStr = genArgInStr(ii);
-        
-        % Create arg out string
-        argOutStr = genArgOutStr(jj);
-        
-        fcalls{kk} = sprintf('%s = %s%s%s;', argOutStr, fname, namespace, argInStr);
-        kk = kk+1;
+for ii = 0:nargin
+    if isempty(argOutStr)
+        prefix = '';
+    else
+        prefix = sprintf('%s = ', argOutStr);
+    end
+    argInStr = genArgInStr(ii);
+    fcalls{ii+1} = sprintf('%s%s%s%s;', prefix, fname, namespace, argInStr); %#ok<AGROW>
+end
+
+
+
+% ------------------------------------------------------------------------------
+function s = genFcallIfElse(funcCall)
+s = sprintf('    if nargin == 0\n');
+for kk = 1:length(funcCall)
+    s = sprintf('%s        %s\n', s, funcCall{kk});
+    if kk<length(funcCall)
+        s = sprintf('%s    elseif nargin == %d\n', s, kk);
     end
 end
+s = sprintf('%s    end', s);
+
 
 
 
@@ -78,21 +85,20 @@ ii = 1;
 body{ii,1} = funcHdrs{1}; ii = ii+1;
 body{ii,1} = 'global namespace'; ii = ii+1;
 body{ii,1} = sprintf('if strcmp(namespace, ''%s'')', namespace1);  ii = ii+1;
-for kk = 1:length(funcCalls{1})
-    body{ii,1} = sprintf('    %s', funcCalls{1});  ii = ii+1;
-    if kk<length(funcCalls{1})
-    end
-end
+body{ii,1} = genFcallIfElse(funcCalls{1});  ii = ii+1;
 body{ii,1} = sprintf('elseif strcmp(namespace, ''%s'')', namespace2);  ii = ii+1;
-body{ii,1} = sprintf('    %s', funcCalls{2});  ii = ii+1;
-body{ii,1} = sprintf('end');  ii = ii+1;
+body{ii,1} = genFcallIfElse(funcCalls{2});  ii = ii+1;
+body{ii,1} = sprintf('end');
 
 
 
 % -------------------------------------------------------------------------------
 function saveCommonFile(fname, body)
-
-filename = [filesepStandard(pwd), fname, '.m'];
+global resolve
+if ~ispathvalid(resolve.outputDir)
+    mkdir(resolve.outputDir);
+end
+filename = [filesepStandard(resolve.outputDir), fname, '.m'];
 fprintf('##################################\n')
 fprintf('Saving file %s\n', filename);
 

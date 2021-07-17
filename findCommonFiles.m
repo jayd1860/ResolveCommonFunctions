@@ -1,5 +1,5 @@
 function [filesCommonDifferent, filesCommonSame] = findCommonFiles(ws1, ws2)
-global exclList
+global resolve
 
 filesCommonDifferent = {};
 filesCommonSame = {};
@@ -8,8 +8,8 @@ if nargin<2
     return
 end
 
-files1 = findDotMFiles(ws1, exclList);
-files2 = findDotMFiles(ws2, exclList);
+files1 = findDotMFiles(ws1, resolve.exclList);
+files2 = findDotMFiles(ws2, resolve.exclList);
 
 N = length(files1);
 

@@ -1,4 +1,5 @@
 function argOutStr = genArgOutStr(nargout)
+argOutStr = '';
 if ~iscell(nargout)
     for ii = 1:nargout
         argNames{ii} = sprintf('out%d', ii); %#ok<AGROW>
@@ -6,6 +7,9 @@ if ~iscell(nargout)
 else
     argNames = nargout;
     nargout = length(argNames);
+end
+if nargout==0
+    return;
 end
 argOutStr = '[';
 for ii = 1:nargout

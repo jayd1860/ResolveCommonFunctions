@@ -35,13 +35,17 @@ function [filesCommonDifferent, filesCommonSame] = ResolveCommonFunctions(ws1, w
 %
 %
 %
-global exclList
+global resolve
 
-exclList = {
+resolve.exclList = {
     '.git';
     'setpaths.m';
     'UserFunctions';
     };
+pname = which('ResolveCommonFunctions');
+resolve.outputDir = [filesepStandard(fileparts(pname)), 'output/'];
+fclose all;
+delete([resolve.outputDir, '*']);
 
 filesCommonDifferent = {};
 filesCommonSame = {};
@@ -103,29 +107,5 @@ for ii = 1:N
 end
 fprintf('\n');
 close(h);
-
-
-
-% --------------------------------------------------------
-function namespacePaths = CreateNamespace(files, namespace)
-namespacePaths = {};
-kk = 1;
-for ii = 1:length(files)
-    [pname, fname, ext] = fileparts(files{ii});
-    namespacefull = generateNamespaceFolder(namespace, pname, fname, ext);
-    filenameNew = [namespacefull, fname, ext];
-    if ~ispathvalid(filenameNew)
-        r = movefile_local(files{ii}, filenameNew);
-        if r==0
-            namespacePaths{kk,1} = filenameNew; %#ok<AGROW>
-            kk = kk+1;
-        end
-    else
-        fprintf('%s already exists.\n', filenameNew)
-    end
-    
-end
-fprintf('\n');
-
 
 
