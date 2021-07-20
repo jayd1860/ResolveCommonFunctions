@@ -41,6 +41,7 @@ resolve.exclList = {
     '.git';
     'setpaths.m';
     'UserFunctions';
+    'Install';
     };
 pname = which('ResolveCommonFunctions');
 resolve.outputDir = [filesepStandard(fileparts(pname)), 'output/'];
