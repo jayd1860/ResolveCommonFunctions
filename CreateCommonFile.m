@@ -37,7 +37,11 @@ argInStr = genArgInStr(nargin);
 % Create arg out string
 argOutStr = genArgOutStr(nargout);
 
-funcHdr = sprintf('function %s = %s%s%s', argOutStr, fname, namespace, argInStr);
+if isempty(argOutStr)
+    funcHdr = sprintf('function %s%s%s', fname, namespace, argInStr);
+else
+    funcHdr = sprintf('function %s = %s%s%s', argOutStr, fname, namespace, argInStr);
+end
 
 
 

@@ -51,7 +51,11 @@ while 1
     end
     p = parseFuncHeader(ln);
     if ~isempty(p.funcName)
-        ln = sprintf('function %s = %s_%s%s', genArgOutStr(p.argOut), p.funcName, namespace, genArgInStr(p.argIn));
+        if isempty(p.argOut)
+            ln = sprintf('function %s_%s%s', p.funcName, namespace, genArgInStr(p.argIn));
+        else
+            ln = sprintf('function %s = %s_%s%s', genArgOutStr(p.argOut), p.funcName, namespace, genArgInStr(p.argIn));
+        end
     else
         for ii = 1:length(fcalls)
             k = findstrFunctionName(ln, fcalls{ii});
