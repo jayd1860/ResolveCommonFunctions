@@ -13,12 +13,12 @@ end
 for ii = 1:length(dirname0)
     dirname = dirname0{ii};
     try
-        b(1) = isfolder(dirname);
+        b(ii) = isfolder(dirname);
     catch
         try
-            b(1) = isdir(dirname);
+            b(ii) = isdir(dirname);
         catch
-            b(1) = (exist(dirname,'dir') == 7);
+            b(ii) = (exist(dirname,'dir') == 7);
         end
     end
 end
