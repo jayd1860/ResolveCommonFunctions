@@ -1,4 +1,4 @@
-function [funcHdrs, funcCalls] = CreateCommonFile(filename1, filename2, namespace1, namespace2)
+function [funcHdr, funcCalls] = CreateCommonFile(filename1, filename2, namespace1, namespace2)
 
 %fid = fopen('./temp.m','wt');
 
@@ -11,14 +11,12 @@ fname = fname1;
 nargin  = max([length(inp1), length(inp2)]);
 nargout = max([length(out1), length(out2)]);
 
-funcHdrs{1} = createFuncFormalHdr(fname, '', nargin, nargout);
-funcHdrs{2} = createFuncFormalHdr(fname, namespace1, nargin, nargout);
-funcHdrs{3} = createFuncFormalHdr(fname, namespace2, nargin, nargout);
+funcHdr = createFuncFormalHdr(fname, '', nargin, nargout);
 
 funcCalls{1} = createFuncCalls(fname, namespace1, length(inp1), length(out1));
 funcCalls{2} = createFuncCalls(fname, namespace2, length(inp2), length(out2));
 
-body = createFuncBody(funcHdrs, funcCalls, namespace1, namespace2);
+body = createFuncBody(funcHdr, funcCalls, namespace1, namespace2);
 body = [body; createSubFuncStr(filename1, namespace1)];
 body = [body; createSubFuncStr(filename2, namespace2)];
 
@@ -59,8 +57,7 @@ for ii = 0:nargin
     else
         prefix = sprintf('%s = ', argOutStr);
     end
-    argInStr = genArgInStr(ii);
-    fcalls{ii+1} = sprintf('%s%s%s%s;', prefix, fname, namespace, argInStr); %#ok<AGROW>
+    fcalls{ii+1} = sprintf('%s%s%s%s;', prefix, fname, namespace, genArgInStr(ii)); %#ok<AGROW>
 end
 
 
@@ -80,13 +77,20 @@ s = sprintf('%s    end', s);
 
 
 % -------------------------------------------------------------------------------
-function body = createFuncBody(funcHdrs, funcCalls, namespace1, namespace2)
+function body = createFuncBody(funcHdr, funcCalls, namespace1, namespace2)
+p = parseFuncHeader(funcHdr);
 ii = 1;
-body{ii,1} = funcHdrs{1}; ii = ii+1;
-body{ii,1} = 'global namespace'; ii = ii+1;
-body{ii,1} = sprintf('if strcmp(namespace, ''%s'')', namespace1);  ii = ii+1;
+body{ii,1} = funcHdr; ii = ii+1;
+for jj = 1:length(p.argOut)
+    body{ii,1} = sprintf('out%d = [];', jj); ii = ii+1;
+end
+body{ii,1} = 'c = context();'; ii = ii+1;
+body{ii,1} = 'if isempty(c)'; ii = ii+1;
+body{ii,1} = '    return;'; ii = ii+1;
+body{ii,1} = 'end'; ii = ii+1;
+body{ii,1} = sprintf('if strcmp(c, ''%s'')', namespace1);  ii = ii+1;
 body{ii,1} = genFcallIfElse(funcCalls{1});  ii = ii+1;
-body{ii,1} = sprintf('elseif strcmp(namespace, ''%s'')', namespace2);  ii = ii+1;
+body{ii,1} = sprintf('elseif strcmp(c, ''%s'')', namespace2);  ii = ii+1;
 body{ii,1} = genFcallIfElse(funcCalls{2});  ii = ii+1;
 body{ii,1} = sprintf('end');
 

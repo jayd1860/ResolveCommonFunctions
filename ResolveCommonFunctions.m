@@ -109,3 +109,17 @@ fprintf('\n');
 close(h);
 
 
+fprintf('Copying resolved files to the 2 projects\n');
+for ii = 1:N
+    [~, f, e] = fileparts(filesCommonDifferent{ii,1});
+    
+    fprintf('Copying %s to %s\n', [resolve.outputDir, f, e], filesCommonDifferent{ii,1});
+    copyfile([resolve.outputDir, f, e], filesCommonDifferent{ii,1});
+
+    fprintf('Copying %s to %s\n', [resolve.outputDir, f, e], filesCommonDifferent{ii,2});
+    copyfile([resolve.outputDir, f, e], filesCommonDifferent{ii,2});
+    
+    fprintf('\n');    
+end
+
+
