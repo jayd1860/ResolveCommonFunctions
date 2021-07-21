@@ -88,13 +88,13 @@ body{ii,1} = funcHdr; ii = ii+1;
 for jj = 1:length(p.argOut)
     body{ii,1} = sprintf('out%d = [];', jj); ii = ii+1;
 end
-body{ii,1} = 'c = context();'; ii = ii+1;
-body{ii,1} = 'if isempty(c)'; ii = ii+1;
+body{ii,1} = 'ns = getNamespace();'; ii = ii+1;
+body{ii,1} = 'if isempty(ns)'; ii = ii+1;
 body{ii,1} = '    return;'; ii = ii+1;
 body{ii,1} = 'end'; ii = ii+1;
-body{ii,1} = sprintf('if strcmp(c, ''%s'')', namespace1);  ii = ii+1;
+body{ii,1} = sprintf('if strcmp(ns, ''%s'')', namespace1);  ii = ii+1;
 body{ii,1} = genFcallIfElse(funcCalls{1});  ii = ii+1;
-body{ii,1} = sprintf('elseif strcmp(c, ''%s'')', namespace2);  ii = ii+1;
+body{ii,1} = sprintf('elseif strcmp(ns, ''%s'')', namespace2);  ii = ii+1;
 body{ii,1} = genFcallIfElse(funcCalls{2});  ii = ii+1;
 body{ii,1} = sprintf('end');
 

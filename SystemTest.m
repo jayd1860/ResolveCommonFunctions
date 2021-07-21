@@ -2,10 +2,10 @@ function filesCommonDifferent = SystemTest(options)
 if ~exist('options','var')
     options = 'reset:change';
 end
-ws1 = 'f:/jdubb/workspaces/try2/blabla1/';
-ws2 = 'f:/jdubb/workspaces/try2/blabla2/';
-ns1 = 'Apptry1GUI';
-ns2 = 'Apptry2GUI';
+ws1 = 'F:\jdubb\workspaces\try\AtlasViewer.BUNPC_development';
+ws2 = 'F:\jdubb\workspaces\try\Homer3.BUNPC_development';
+ns1 = 'AtlasViewerGUI';
+ns2 = 'Homer3';
 
 if optionExists('nochange',options)
     return
