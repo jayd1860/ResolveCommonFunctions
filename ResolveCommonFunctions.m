@@ -51,6 +51,7 @@ delete([resolve.outputDir, '*']);
 filesCommonDifferent = {};
 filesCommonSame = {};
 
+% Parse args
 if nargin < 2
     return;
 end
