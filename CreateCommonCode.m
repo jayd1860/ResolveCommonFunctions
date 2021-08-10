@@ -36,12 +36,12 @@ else
     ws2 = filesepStandard(ws2);
 end
 if ~exist('options','var')
-    options = '';
+    options = 'reset';
 end
 
 % Reset workspaces
 if optionExists(options,'reset')
-    gitRevertCmd(ws1);
+    gitRevertCmd(ws1);    
     gitRevertCmd(ws2);
 end
 
@@ -73,13 +73,22 @@ end
 % Create common code
 for ii = 1:length(filesCommon)
     fprintf('Copying %s to %s\n', [appDir1, filesCommon{ii}], [rootdirThisApp, filesCommon{ii}]);
-    p = fileparts([rootdirThisApp, filesCommon{ii}]);    if ~ispathvalid(p)
+    p = fileparts([rootdirThisApp, filesCommon{ii}]);    
+    if ~ispathvalid(p)
         mkdir(p)
     end
     fprintf('Copying %s to %s\n', [appDir1, filesCommon{ii}], p);
     copyfile([appDir1, filesCommon{ii}], p);
-    pause(.2);
+
+    gitDelete([appDir1, filesCommon{ii}]);
+    gitDelete([appDir2, filesCommon{ii}]);
+
+    fprintf('\n');
 end
+
+fprintf('Added %d files to common code project %s\n\n', ii, appname);
+
+
 
 
 
