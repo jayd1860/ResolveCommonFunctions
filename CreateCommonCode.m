@@ -47,7 +47,7 @@ end
 
 % Set root folder of common code
 rootdirThisApp  = filesepStandard(fileparts(which('CreateCommonCode')));
-rootdirCommCode = [rootdirThisApp, appname];
+rootdirCommCode = [rootdirThisApp, 'CommonCode/', appname];
 if ispathvalid(rootdirCommCode)
     rmdir(rootdirCommCode, 's');
 end
@@ -72,12 +72,11 @@ end
 
 % Create common code
 for ii = 1:length(filesCommon)
-    fprintf('Copying %s to %s\n', [appDir1, filesCommon{ii}], [rootdirThisApp, filesCommon{ii}]);
-    p = fileparts([rootdirThisApp, filesCommon{ii}]);    
+    p = fileparts([rootdirThisApp, 'CommonCode/', filesCommon{ii}]);    
     if ~ispathvalid(p)
         mkdir(p)
     end
-    fprintf('Copying %s to %s\n', [appDir1, filesCommon{ii}], p);
+    fprintf('%d. Copying %s to %s\n', ii, [appDir1, filesCommon{ii}], p);
     copyfile([appDir1, filesCommon{ii}], p);
 
     gitDelete([appDir1, filesCommon{ii}]);

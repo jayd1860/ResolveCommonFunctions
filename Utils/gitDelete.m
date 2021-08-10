@@ -14,7 +14,8 @@ cd(p)
 
 cmd = sprintf('git rm ./%s', [f, e]);
 [r, msg] = system(cmd);
-fprintf('%s', msg)
+% fprintf('%s', msg)
+fprintf('  git rm %s\n', fname)
 
 cd(currdir)
 pause(.1);
