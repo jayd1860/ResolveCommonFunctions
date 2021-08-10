@@ -18,3 +18,5 @@ fprintf('%s', msg)
 r = ~(r1==0 && r2==0);
 
 fprintf('\n');
+
+pause(1);
