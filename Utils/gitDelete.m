@@ -17,3 +17,4 @@ cmd = sprintf('git rm ./%s', [f, e]);
 fprintf('%s', msg)
 
 cd(currdir)
+
