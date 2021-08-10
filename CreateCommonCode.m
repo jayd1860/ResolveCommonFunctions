@@ -47,7 +47,7 @@ end
 
 % Set root folder of common code
 rootdirThisApp  = filesepStandard(fileparts(which('CreateCommonCode')));
-rootdirCommCode = [rootdirThisApp, 'CommonCode/', appname];
+rootdirCommCode = [rootdirThisApp, 'Shared/', appname];
 if ispathvalid(rootdirCommCode)
     rmdir(rootdirCommCode, 's');
 end
@@ -72,7 +72,7 @@ end
 
 % Create common code
 for ii = 1:length(filesCommon)
-    p = fileparts([rootdirThisApp, 'CommonCode/', filesCommon{ii}]);    
+    p = fileparts([rootdirThisApp, 'Shared/', filesCommon{ii}]);    
     if ~ispathvalid(p)
         mkdir(p)
     end
