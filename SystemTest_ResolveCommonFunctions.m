@@ -1,4 +1,4 @@
-function filesCommonDifferent = SystemTest(options)
+function filesCommonDifferent = SystemTest_ResolveCommonFunctions(options)
 if ~exist('options','var')
     options = 'reset:change';
 end

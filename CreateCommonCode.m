@@ -1,4 +1,4 @@
-function filesCommon = CreateCommonCode(ws1, ws2, appname, options)
+function filesCommon = CreateCommonCode(ws1, ws2, appname, url, options)
 %
 % Syntax:
 %   filesCommon = CreateCommonCode(ws1, ws2, appname)
@@ -21,6 +21,10 @@ resolve.exclList = {
 
 filesCommon = {};
 
+fprintf('=====================================\n');
+fprintf('Creating shared library  "%s"\n', appname);
+fprintf('=====================================\n\n');
+
 % Parse args
 if nargin < 2
     return;
@@ -35,6 +39,9 @@ if ~ispathvalid(ws2, 'dir')
 else
     ws2 = filesepStandard(ws2);
 end
+if ~exist('url','var')
+    url = '';
+end
 if ~exist('options','var')
     options = 'reset';
 end
@@ -43,6 +50,9 @@ end
 if optionExists(options,'reset')
     gitRevertCmd(ws1);    
     gitRevertCmd(ws2);
+end
+if ~optionExists(options,'change')
+    return;
 end
 
 % Set root folder of common code
@@ -59,33 +69,54 @@ if isempty(appDir1) || isempty(appDir2)
     return
 end
 
+fprintf('Code 1 location %s\n', appDir1);
+fprintf('Code 2 location %s\n', appDir2);
+
 % Find all common code files
-[~, filesCommonSame] = findCommonFiles(ws1, ws2);
-kk = 1;
-for ii = 1:length(filesCommonSame)
-    pname = getRelativePath(filesCommonSame{ii,1}, filesCommonSame{ii,2}, appname);
-    if ~isempty(pname)
-        filesCommon{kk,1} = pname;
-        kk = kk+1;
-    end    
-end
-
-% Create common code
-for ii = 1:length(filesCommon)
-    p = fileparts([rootdirThisApp, 'Shared/', filesCommon{ii}]);    
-    if ~ispathvalid(p)
-        mkdir(p)
+if ~optionExists(options, 'nofilesearch')
+    [~, filesCommonSame] = findCommonFiles(ws1, ws2);
+    kk = 1;
+    for ii = 1:length(filesCommonSame)
+        pname = getRelativePath(filesCommonSame{ii,1}, filesCommonSame{ii,2}, appname);
+        if ~isempty(pname) && isempty(strfind(pname, [appname, '/Shared/']))
+            filesCommon{kk,1} = pname;
+            kk = kk+1;
+        end
     end
-    fprintf('%d. Copying %s to %s\n', ii, [appDir1, filesCommon{ii}], p);
-    copyfile([appDir1, filesCommon{ii}], p);
-
-    gitDelete([appDir1, filesCommon{ii}]);
-    gitDelete([appDir2, filesCommon{ii}]);
-
-    fprintf('\n');
+    
+    % Create common code
+    for ii = 1:length(filesCommon)
+        p = fileparts([rootdirThisApp, 'Shared/', filesCommon{ii}]);
+        if ~ispathvalid(p)
+            mkdir(p)
+        end
+        fprintf('%d. Copying %s to %s\n', ii, [appDir1, filesCommon{ii}], p);
+        copyfile([appDir1, filesCommon{ii}], p);
+        
+        gitDelete([appDir1, filesCommon{ii}]);
+        gitDelete([appDir2, filesCommon{ii}]);
+        
+        fprintf('\n');
+    end
+    
+    % Do not add submodules if the apps are not in conflict
+    if isempty(filesCommon)
+        fprintf('No files in conflict. Exiting with no action.\n\n');
+        return;
+    end
+    
+    fprintf('Added %d files to common code project %s\n\n', ii, appname);
+    
+else
+    
+    gitDelete([appDir1, appname])
+    gitDelete([appDir2, appname])
+    
 end
 
-fprintf('Added %d files to common code project %s\n\n', ii, appname);
+gitSubmoduleAdd(appDir1, url, appname);
+gitSubmoduleAdd(appDir2, url, appname);
+
 
 
 
