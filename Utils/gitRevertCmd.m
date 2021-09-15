@@ -6,8 +6,6 @@ cd(ws)
 
 fprintf('Revert changes in %s\n', ws)
 
-system('git checkout development');
-
 cmd = sprintf('git reset --hard');
 [r1, msg] = system(cmd);
 fprintf('%s', msg)
