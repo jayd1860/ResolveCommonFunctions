@@ -109,6 +109,7 @@ if ~optionExists(options, 'nofilesearch')
     
 else
     
+    copyfile([appDir2, appname], [rootdirThisApp, 'Shared/', appname])
     gitDelete([appDir1, appname])
     gitDelete([appDir2, appname])
     
