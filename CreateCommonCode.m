@@ -111,7 +111,7 @@ if ~optionExists(options, 'nofilesearch')
 else
     appdir = appname;
     
-    copyfile([appDir2, appname], [rootdirThisApp, 'Shared/', appname])
+    copyfile([appDir1, appname], [rootdirThisApp, 'Shared/', appname])
     gitDelete([appDir1, appname]);
     gitDelete([appDir2, appname]);
     
