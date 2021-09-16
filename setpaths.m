@@ -65,6 +65,8 @@ if exist([pwd, '/Utils'], 'dir')==7
     addpath([pwd, '/Utils'], '-end');
 end
 
+downloadSubmoduleUtils();
+
 % Parse arguments
 if ~exist('options_str','var')
     options_str = 'rmpathconfl';
@@ -233,3 +235,11 @@ if isunix()
 end
 
 
+
+% ----------------------------------------------------
+function downloadSubmoduleUtils()
+if ispathvalid('./Utils/submodules')
+    return;
+end
+cmd = sprintf('git submodule update --init');
+[r, m] = system(cmd); %#ok<*ASGLU>

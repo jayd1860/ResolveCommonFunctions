@@ -17,9 +17,9 @@ if isfile_private([f, e])
 else
     cmd = sprintf('git rm -r ./%s', [f, e]);
 end
-[r, msg] = system(cmd); %#ok<ASGLU>
-fprintf('  %s\n', cmd)
-fprintf('  %s\n', msg)
+[r, msg] = system(cmd);
+fprintf('  %s\n', cmd);
+fprintf('  %s\n', msg);
 
-cd(currdir)
+cd(currdir);
 pause(.1);

@@ -69,11 +69,12 @@ if isempty(appDir1) || isempty(appDir2)
     return
 end
 
-fprintf('Code 1 location %s\n', appDir1);
-fprintf('Code 2 location %s\n', appDir2);
+fprintf('\n');
 
 % Find all common code files
 if ~optionExists(options, 'nofilesearch')
+    appdir = [appname, '/Shared'];
+        
     [~, filesCommonSame] = findCommonFiles(ws1, ws2);
     kk = 1;
     for ii = 1:length(filesCommonSame)
@@ -101,23 +102,26 @@ if ~optionExists(options, 'nofilesearch')
     
     % Do not add submodules if the apps are not in conflict
     if isempty(filesCommon)
-        fprintf('No files in conflict. Exiting with no action.\n\n');
+        fprintf('No common files. Exiting with no action.\n\n');
         return;
     end
     
     fprintf('Added %d files to common code project %s\n\n', ii, appname);
     
 else
+    appdir = appname;
     
     copyfile([appDir2, appname], [rootdirThisApp, 'Shared/', appname])
-    gitDelete([appDir1, appname])
-    gitDelete([appDir2, appname])
+    gitDelete([appDir1, appname]);
+    gitDelete([appDir2, appname]);
     
 end
 
-gitSubmoduleAdd(appDir1, url, appname);
-gitSubmoduleAdd(appDir2, url, appname);
+gitSubmoduleAdd(appDir1, url, appname, appdir);
+gitSubmoduleAdd(appDir2, url, appname, appdir);
 
+copySubmoduleUtils(ws1, rootdirThisApp);
+copySubmoduleUtils(ws2, rootdirThisApp);
 
 
 
@@ -137,3 +141,15 @@ if pathscompare(p1, p2, 'nameonly')
     pnameCommon = p1;
 end
 
+
+
+% ---------------------------------------------------------
+function copySubmoduleUtils(ws, rootdirThisApp)
+wsSubmoduleDir = [ws, 'Utils/submodules'];
+if ~ispathvalid(wsSubmoduleDir)
+    copyfile([rootdirThisApp, 'Utils/submodules/*.m'], wsSubmoduleDir);
+    copyfile([rootdirThisApp, 'Utils/submodules/*.fig'], wsSubmoduleDir);
+    cd(ws);
+    cmd = sprintf('git add %s', wsSubmoduleDir);
+    [r,m] = system(cmd); %#ok<*ASGLU>
+end
