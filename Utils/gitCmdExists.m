@@ -1,6 +1,6 @@
-function b = gitCmdExists()
+function [b, m] = gitCmdExists()
 b = false;
-[r, ~] = system('git --version');
+[r, m] = system('git --version');
 if r==0
     b = true;
 end

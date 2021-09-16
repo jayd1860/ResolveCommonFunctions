@@ -1,6 +1,6 @@
-function filesCommon = SystemTest_CreateCommonCode(options)
-if ~exist('options','var')
-    options = 'reset:change';
+function [filesCommon1, filesCommon2] = SystemTest_CreateCommonCode(branch)
+if ~exist('branch','var')
+    branch = 'development';
 end
 ws1 = 'c:\jdubb\workspaces\try\Homer3'; 
 ws2 = 'c:\jdubb\workspaces\try\AtlasViewer'; 
@@ -12,8 +12,11 @@ if ispathvalid(rootdirCommCode)
     rmdir(rootdirCommCode, 's');
 end
 
+gitSetBranch(ws1, branch);
+gitSetBranch(ws2, branch);
 
-filesCommon = CreateCommonCode(ws1, ws2, 'Utils', url, options);
-filesCommon = CreateCommonCode(ws1, ws2, 'DataTree', url, 'reset:change:nofilesearch');
+filesCommon1 = CreateCommonCode(ws1, ws2, 'Utils', url, 'reset:change');
+filesCommon2 = CreateCommonCode(ws1, ws2, 'DataTree', url, 'change:nofilesearch');
+
 
 
