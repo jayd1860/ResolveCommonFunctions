@@ -12,7 +12,7 @@ end
 currdir = pwd;
 cd(wspath);
 
-cmd = sprintf('git submodule add %s/%s %s\n', url, appname, appname);
+cmd = sprintf('git submodule add %s/%s %s\n', url, appname, appdir);
 fprintf(cmd);
 [err, msg] = system(cmd);
 
