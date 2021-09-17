@@ -1,25 +1,53 @@
-function r = gitDelete(fname)
+function r = gitDelete(repo, pname, cacheonly)
 r = -1;
-if ~ispathvalid(fname)
-    return
+if ~exist('repo','var')
+    repo = filesepStandard(pwd);
+end
+if ~exist('cacheonly','var')
+    cacheonly = 0;
 end
 
 currdir = pwd;
+cd(repo)
 
-[p,f,e] = fileparts(fname);
-if isempty(p)
-    return;
+if ~ispathvalid(pname)
+    return
 end
-cd(p)
 
-if isfile_private([f, e])
-    cmd = sprintf('git rm ./%s', [f, e]);
+ii = 1;
+cached = '';
+if ispathvalid([repo, '.git/modules/', pname])
+    cached = '--cached';
+end
+
+if isfile_private(pname)
+    cmds{ii} = sprintf('git rm %s ./%s', cached, pname); ii = ii+1;
 else
-    cmd = sprintf('git rm -r ./%s', [f, e]);
+    cmds{ii} = sprintf('git rm -r %s ./%s', cached, pname); ii = ii+1;
 end
-[r, msg] = system(cmd);
-fprintf('  %s\n', cmd);
-fprintf('  %s\n', msg);
+if ~isempty(cached)
+    cmds = deleteShellCmd(repo, cmds); ii = ii+1;
+end
+
+[~, msgs] = exeShellCmds(cmds);
+
+for ii = 1:length(cmds)
+    fprintf('  %s\n', cmds{ii});
+    fprintf('  %s\n', msgs{ii});
+end
 
 cd(currdir);
-pause(.1);
+
+
+
+% ---------------------------------------------------------------------
+function cmds = deleteShellCmd(pname, cmds)
+if ispc()    
+    if isfile_private(pname)
+        cmds{end+1} = sprintf('del %s /f /q', pname);
+    else
+        cmds{end+1} = sprintf('rmdir %s /s /q', pname);
+    end
+elseif ismac() || isunix()
+    cmds{end+1} = sprintf('rm -rf %s', pname);
+end

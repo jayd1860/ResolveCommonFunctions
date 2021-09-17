@@ -50,6 +50,7 @@ for ii = 1:length(dirs)
     if ispathvalid(dirname)
         fprintf('Removing file %s\n', dirname);
         delete(dirname);
-    end    
+    else
+        cleanup([ws, '/', dirs(ii).name])
+    end
 end
-    

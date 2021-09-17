@@ -20,6 +20,9 @@ function [pname, rootdir] = findAppdir(rootdir, appname)
         if strcmp(dirs(ii).name, '.')
             continue;
         end
+        if strcmp(dirs(ii).name, '.git')
+            continue;
+        end
         if strcmp(dirs(ii).name, '..')
             continue;
         end

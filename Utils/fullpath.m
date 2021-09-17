@@ -25,6 +25,9 @@ elseif strcmp(pname, '..')
     cd(currdir);
 else
     [p,f,e] = fileparts(pname);
+    if p(end) == '\' || p(end) == '/'
+        p(end) = '';
+    end
     if length(f)==1 && f=='.' && length(e)==1 && e=='.' 
         f = ''; 
         e = '';
@@ -46,9 +49,9 @@ end
 currdir = pwd;
 
 try
-    cd(pname);
+    cd_safe(pname);
 catch
-    try 
+    try         
         cd(p)
     catch        
         return;
@@ -60,7 +63,12 @@ if strcmp(style, 'linux')
 else
     sep = filesep;
 end
-pnamefull = [pwd,sep,f,e];
+
+rootdir = pwd;
+if rootdir(end) ~= '/' && rootdir(end) ~= '\'
+    rootdir = [pwd, sep]; 
+end
+pnamefull = [rootdir,f,e];
 if ~exist(pnamefull, 'file')
     pnamefull = '';
     cd(currdir);

@@ -94,8 +94,8 @@ if ~optionExists(options, 'nofilesearch')
         fprintf('%d. Copying %s to %s\n', ii, [appDir1, filesCommon{ii}], p);
         copyfile([appDir1, filesCommon{ii}], p);
         
-        gitDelete([appDir1, filesCommon{ii}]);
-        gitDelete([appDir2, filesCommon{ii}]);
+        gitDelete(ws1, [pathsubtract(appDir1, ws1), filesCommon{ii}]);
+        gitDelete(ws2, [pathsubtract(appDir2, ws2), filesCommon{ii}]);
         
         fprintf('\n');
     end
@@ -112,8 +112,9 @@ else
     appdir = appname;
     
     copyfile([appDir1, appname], [rootdirThisApp, 'Shared/', appname])
-    gitDelete([appDir1, appname]);
-    gitDelete([appDir2, appname]);
+    
+    gitDelete(ws1, [pathsubtract(appDir1, ws1), appname]);
+    gitDelete(ws2, [pathsubtract(appDir2, ws2), appname]);
     
 end
 
