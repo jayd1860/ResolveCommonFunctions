@@ -1,3 +1,5 @@
 [submodule "Utils/submodules"]
 	path = Utils/submodules
 	url = https://github.com/jayd1860/submodules
+	branch = master
+
