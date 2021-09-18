@@ -47,14 +47,14 @@ if ~exist('options','var')
 end
 
 % Reset workspaces
-try
-    cd([ws1, '.git/modules'])
-    rmdir('*','s');
-    cd([ws2, '.git/modules'])
-    rmdir('*','s');
-catch
-end
 if optionExists(options,'reset')
+	try
+	    cd([ws1, '.git/modules'])
+	    rmdir('*','s');
+	    cd([ws2, '.git/modules'])
+	    rmdir('*','s');
+	catch
+	end
     gitRevertCmd(ws1);    
     gitRevertCmd(ws2);
 end
