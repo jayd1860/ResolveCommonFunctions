@@ -47,6 +47,13 @@ if ~exist('options','var')
 end
 
 % Reset workspaces
+try
+    cd([ws1, '.git/modules'])
+    rmdir('*','s');
+    cd([ws2, '.git/modules'])
+    rmdir('*','s');
+catch
+end
 if optionExists(options,'reset')
     gitRevertCmd(ws1);    
     gitRevertCmd(ws2);
@@ -57,9 +64,9 @@ end
 
 % Set root folder of common code
 rootdirThisApp  = filesepStandard(fileparts(which('CreateCommonCode')));
-rootdirCommCode = [rootdirThisApp, 'Shared/', appname];
-if ispathvalid(rootdirCommCode)
-    rmdir(rootdirCommCode, 's');
+rootdirCommonCode = [rootdirThisApp, 'Shared/'];
+if ispathvalid([rootdirCommonCode, appname])
+    rmdir([rootdirCommonCode, appname], 's');
 end
 
 % Chec that the application is in both codes
@@ -87,7 +94,7 @@ if ~optionExists(options, 'nofilesearch')
     
     % Create common code
     for ii = 1:length(filesCommon)
-        p = fileparts([rootdirThisApp, 'Shared/', filesCommon{ii}]);
+        p = fileparts([rootdirCommonCode, filesCommon{ii}]);
         if ~ispathvalid(p)
             mkdir(p)
         end
@@ -111,21 +118,25 @@ if ~optionExists(options, 'nofilesearch')
 else
     appdir = appname;
     
-    copyfile([appDir1, appname], [rootdirThisApp, 'Shared/', appname])
+    copyfile([appDir1, appname], [rootdirCommonCode, appname])
     
     gitDelete(ws1, [pathsubtract(appDir1, ws1), appname]);
     gitDelete(ws2, [pathsubtract(appDir2, ws2), appname]);
     
 end
 
+% IF remote repo is not empty repo, FIRST initialize with submodule code
+% BEFORE creating a reference to it
+[cmds, errs, msgs] = gitRepoInit([rootdirCommonCode, appname], [url, '/', appname]);
+
+% Now create submodule reference 
 gitSubmoduleAdd(appDir1, url, appname, appdir);
 gitSubmoduleAdd(appDir2, url, appname, appdir);
 
 copySubmoduleUtils(ws1, rootdirThisApp);
 copySubmoduleUtils(ws2, rootdirThisApp);
 
-
-
+cd(rootdirThisApp)
 
 
 % ---------------------------------------------------------

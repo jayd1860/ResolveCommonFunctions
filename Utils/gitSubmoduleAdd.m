@@ -16,7 +16,7 @@ if ispathvalid([repo, '.git/modules/', appname])
     rmdir([repo, '.git/modules/', appname], 's');
 end
 
-cmd = sprintf('git submodule add %s/%s %s\n', url, appname, appdir);
+cmd = sprintf('git submodule add -b development %s/%s %s\n', url, appname, appdir);
 fprintf(cmd);
 [err, msg] = system(cmd);
 

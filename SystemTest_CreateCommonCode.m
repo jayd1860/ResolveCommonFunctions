@@ -17,5 +17,3 @@ gitSetBranch(ws2, branch);
 
 filesCommon1 = CreateCommonCode(ws1, ws2, 'Utils', url, 'reset:change');
 filesCommon2 = CreateCommonCode(ws1, ws2, 'DataTree', url, 'change:nofilesearch');
-
-
