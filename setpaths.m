@@ -241,5 +241,12 @@ function downloadSubmoduleUtils()
 if ispathvalid('./Utils/submodules')
     return;
 end
-cmd = sprintf('git submodule update --init');
-[r, m] = system(cmd); %#ok<*ASGLU>
+ii = 1;
+cmds{ii,1} = sprintf('git submodule update --init'); ii = ii+1;
+cmds{ii,1} = sprintf('git checkout master');  ii = ii+1;
+errs = zeros(length(cmds),1)-1;
+msgs = cell(length(cmds),1);
+for jj = 1:length(cmds)
+    [errs(jj,1), msgs{jj,1}] = system(cmds{jj,1}); %#ok<*ASGLU>
+end
+
