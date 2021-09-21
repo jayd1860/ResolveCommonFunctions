@@ -12,6 +12,17 @@ if ispathvalid(rootdirCommCode)
     rmdir(rootdirCommCode, 's');
 end
 
+if ~ispathvalid(ws1, 'dir')
+    [~, reponame] = fileparts(ws1);
+    cmd = sprintf('git clone %s/%s %s', url, reponame, ws1);
+    system(cmd)
+end
+if ~ispathvalid(ws2, 'dir')
+    [~, reponame] = fileparts(ws2);
+    cmd = sprintf('git clone %s/%s %s', url, reponame, ws2);
+    system(cmd)
+end
+
 gitSetBranch(ws1, branch);
 gitSetBranch(ws2, branch);
 

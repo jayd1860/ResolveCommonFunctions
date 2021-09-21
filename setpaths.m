@@ -238,7 +238,7 @@ end
 
 % ----------------------------------------------------
 function downloadSubmoduleUtils()
-if ispathvalid('./Utils/submodules')
+if ~ispathvalid('./Utils/submodules')
     return;
 end
 ii = 1;
